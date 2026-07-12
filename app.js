@@ -5,21 +5,32 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 let recipes = [];
 let scrolls = [];
 let materials = [];
+let trades = [];
+let purchases = [];
 let byName = {};
 let byMaterial = {};
+let tradesByItem = {};
+let tradesByRequired = {};
+let purchasesByItem = {};
 
 async function loadData() {
-  const [rr, sr, mr] = await Promise.all([
+  const [rr, sr, mr, tr, pr] = await Promise.all([
     supabaseClient.from("recipes").select("*").order("name"),
     supabaseClient.from("scrolls").select("*").order("scroll_type"),
     supabaseClient.from("materials").select("*").order("name"),
+    supabaseClient.from("trades").select("*").order("item_name"),
+    supabaseClient.from("purchases").select("*").order("item_name"),
   ]);
   if (rr.error) throw rr.error;
   if (sr.error) throw sr.error;
   if (mr.error) throw mr.error;
+  if (tr.error) throw tr.error;
+  if (pr.error) throw pr.error;
   recipes = rr.data;
   scrolls = sr.data;
   materials = mr.data.map(m => m.name);
+  trades = tr.data;
+  purchases = pr.data;
   buildIndexes();
 }
 
@@ -34,6 +45,23 @@ function buildIndexes() {
       if (!byMaterial[mat.name]) byMaterial[mat.name] = [];
       byMaterial[mat.name].push({ name: r.name, qty: mat.qty });
     }
+  }
+
+  tradesByItem = {};
+  tradesByRequired = {};
+  for (const t of trades) {
+    if (!tradesByItem[t.item_name]) tradesByItem[t.item_name] = [];
+    tradesByItem[t.item_name].push(t);
+    if (t.required_name) {
+      if (!tradesByRequired[t.required_name]) tradesByRequired[t.required_name] = [];
+      tradesByRequired[t.required_name].push(t);
+    }
+  }
+
+  purchasesByItem = {};
+  for (const p of purchases) {
+    if (!purchasesByItem[p.item_name]) purchasesByItem[p.item_name] = [];
+    purchasesByItem[p.item_name].push(p);
   }
 }
 
@@ -334,6 +362,72 @@ function setupScrollCalc() {
   });
 }
 
+// ---------- 교환/구매 검색 ----------
+
+function renderTradeCard(t) {
+  const req = t.required_name ? `${t.required_name} x${t.required_qty ?? "?"}` : "정보 없음";
+  return `<div class="card">
+      <h3>${t.item_name} x${t.item_qty}</h3>
+      <div class="tag">${t.town} · ${t.npc} · 필요: ${req}${t.limit_text ? ` · 제한: ${t.limit_text}` : ""}</div>
+    </div>`;
+}
+
+function renderPurchaseCard(p) {
+  const price = p.price_currency ? `${p.price_amount}${p.price_currency}` : "가격 정보 없음";
+  return `<div class="card">
+      <h3>${p.item_name}</h3>
+      <div class="tag">${p.town} · ${p.npc} · 가격: ${price}${p.limit_text ? ` · 제한: ${p.limit_text}` : ""}</div>
+    </div>`;
+}
+
+function setupTradeSearch() {
+  const itemInput = document.getElementById("ts-item-input");
+  const itemResult = document.getElementById("ts-item-result");
+  const materialInput = document.getElementById("ts-material-input");
+  const materialResult = document.getElementById("ts-material-result");
+
+  itemInput.addEventListener("input", () => {
+    const name = itemInput.value.trim();
+    if (!name) { itemResult.innerHTML = ""; return; }
+
+    const tradeMatches = tradesByItem[name] || [];
+    const purchaseMatches = purchasesByItem[name] || [];
+
+    if (!tradeMatches.length && !purchaseMatches.length) {
+      itemResult.innerHTML = "<p>교환/구매 정보가 없습니다.</p>";
+      return;
+    }
+
+    const tradeHtml = tradeMatches.length
+      ? `<h4>교환으로 얻기</h4>${tradeMatches.map(renderTradeCard).join("")}`
+      : "";
+    const purchaseHtml = purchaseMatches.length
+      ? `<h4>구매하기</h4>${purchaseMatches.map(renderPurchaseCard).join("")}`
+      : "";
+    itemResult.innerHTML = tradeHtml + purchaseHtml;
+  });
+
+  materialInput.addEventListener("input", () => {
+    const name = materialInput.value.trim();
+    if (!name) { materialResult.innerHTML = ""; return; }
+
+    const matches = tradesByRequired[name] || [];
+    materialResult.innerHTML = matches.length
+      ? matches.map(renderTradeCard).join("")
+      : "<p>이 재료로 교환할 수 있는 아이템이 없습니다.</p>";
+  });
+}
+
+function refreshTradeSearchDatalists() {
+  const itemNames = [...new Set([...trades.map(t => t.item_name), ...purchases.map(p => p.item_name)])];
+  document.getElementById("ts-item-datalist").innerHTML =
+    itemNames.map(n => `<option value="${escapeAttr(n)}">`).join("");
+
+  const materialNames = [...new Set(Object.keys(tradesByRequired))];
+  document.getElementById("ts-material-datalist").innerHTML =
+    materialNames.map(n => `<option value="${escapeAttr(n)}">`).join("");
+}
+
 // ---------- 5. 전체 목록 ----------
 
 let currentList = "recipes";
@@ -342,6 +436,8 @@ let currentList = "recipes";
 const listFilters = {
   recipes: { major_category: "", sub_category: "" },
   scrolls: { town: "", scroll_type: "" },
+  trades: { town: "", npc: "" },
+  purchases: { town: "", npc: "" },
 };
 
 function setupLists() {
@@ -442,11 +538,81 @@ function renderList() {
         <tbody>${rowsHtml}</tbody>
       </table></div>`;
     bindHeaderFilters(result, f);
-  } else {
+  } else if (currentList === "materials") {
     const items = materials.filter(m => m.toLowerCase().includes(search));
     result.innerHTML = items.length
       ? "<ul>" + items.map(m => `<li>${m}</li>`).join("") + "</ul>"
       : "<p>없음</p>";
+  } else if (currentList === "trades") {
+    const f = listFilters.trades;
+    const towns = [...new Set(trades.map(t => t.town).filter(Boolean))].sort();
+    const npcs = [...new Set(trades.map(t => t.npc).filter(Boolean))].sort();
+
+    const items = trades.filter(t =>
+      t.item_name.toLowerCase().includes(search) &&
+      (!f.town || t.town === f.town) &&
+      (!f.npc || t.npc === f.npc)
+    );
+
+    const rowsHtml = items.length
+      ? items.map(t => {
+          const req = t.required_name ? `${t.required_name} x${t.required_qty ?? "?"}` : "-";
+          return `<tr>
+              <td>${t.town}</td>
+              <td>${t.npc}</td>
+              <td>${t.item_name} x${t.item_qty}</td>
+              <td>${req}</td>
+              <td>${t.limit_text || "-"}</td>
+            </tr>`;
+        }).join("")
+      : `<tr><td colspan="5">없음</td></tr>`;
+
+    result.innerHTML = `<div class="table-wrap"><table class="data-table">
+        <thead><tr>
+          <th>마을${headerFilterSelect("town", towns, f.town)}</th>
+          <th>NPC${headerFilterSelect("npc", npcs, f.npc)}</th>
+          <th>얻는 아이템</th>
+          <th>필요 재료</th>
+          <th>제한</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table></div>`;
+    bindHeaderFilters(result, f);
+  } else if (currentList === "purchases") {
+    const f = listFilters.purchases;
+    const towns = [...new Set(purchases.map(p => p.town).filter(Boolean))].sort();
+    const npcs = [...new Set(purchases.map(p => p.npc).filter(Boolean))].sort();
+
+    const items = purchases.filter(p =>
+      p.item_name.toLowerCase().includes(search) &&
+      (!f.town || p.town === f.town) &&
+      (!f.npc || p.npc === f.npc)
+    );
+
+    const rowsHtml = items.length
+      ? items.map(p => {
+          const price = p.price_currency ? `${p.price_amount}${p.price_currency}` : "-";
+          return `<tr>
+              <td>${p.town}</td>
+              <td>${p.npc}</td>
+              <td>${p.item_name}</td>
+              <td>${price}</td>
+              <td>${p.limit_text || "-"}</td>
+            </tr>`;
+        }).join("")
+      : `<tr><td colspan="5">없음</td></tr>`;
+
+    result.innerHTML = `<div class="table-wrap"><table class="data-table">
+        <thead><tr>
+          <th>마을${headerFilterSelect("town", towns, f.town)}</th>
+          <th>NPC${headerFilterSelect("npc", npcs, f.npc)}</th>
+          <th>물품</th>
+          <th>가격</th>
+          <th>제한</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table></div>`;
+    bindHeaderFilters(result, f);
   }
 }
 
@@ -489,9 +655,10 @@ async function refreshAfterDataChange() {
   await loadData();
   setupAutocomplete();
   refreshEditDatalists();
+  refreshTradeSearchDatalists();
   renderList();
   document.getElementById("status").textContent =
-    `제작법 ${recipes.length} · 스크롤 ${scrolls.length} · 원재료 ${materials.length}`;
+    `제작법 ${recipes.length} · 스크롤 ${scrolls.length} · 원재료 ${materials.length} · 교환 ${trades.length} · 구매 ${purchases.length}`;
   window.dispatchEvent(new Event("makingdb:datachanged"));
 }
 
@@ -931,6 +1098,7 @@ async function init() {
     setupFindMaterial();
     setupBreakdown();
     setupScrollCalc();
+    setupTradeSearch();
     setupLists();
     setupAutocomplete();
     setupAuth();
@@ -941,8 +1109,10 @@ async function init() {
     setupScrollManage();
     setupMaterialManage();
     refreshEditDatalists();
+    refreshTradeSearchDatalists();
     renderList();
-    status.textContent = `제작법 ${recipes.length} · 스크롤 ${scrolls.length} · 원재료 ${materials.length}`;
+    status.textContent =
+      `제작법 ${recipes.length} · 스크롤 ${scrolls.length} · 원재료 ${materials.length} · 교환 ${trades.length} · 구매 ${purchases.length}`;
 
     const { data: { session } } = await supabaseClient.auth.getSession();
     updateAuthUI(session);

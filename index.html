@@ -17,6 +17,7 @@
   <button class="tab-btn" data-tab="find-material">재료 역검색</button>
   <button class="tab-btn" data-tab="breakdown">필요 재료 계산</button>
   <button class="tab-btn" data-tab="scroll-calc">스크롤 계산</button>
+  <button class="tab-btn" data-tab="trade-search">교환/구매 검색</button>
   <button class="tab-btn" data-tab="lists">전체 목록</button>
   <button class="tab-btn" data-tab="edit">편집</button>
 </nav>
@@ -55,12 +56,30 @@
     <div id="sc-result" class="result"></div>
   </section>
 
+  <section id="trade-search" class="tab-panel">
+    <h2>교환/구매 검색</h2>
+
+    <h3>아이템 이름으로 찾기</h3>
+    <p class="hint">교환으로 얻는 법과 구매로 얻는 법을 함께 보여줍니다.</p>
+    <input type="text" id="ts-item-input" list="ts-item-datalist" placeholder="아이템 이름">
+    <datalist id="ts-item-datalist"></datalist>
+    <div id="ts-item-result" class="result"></div>
+
+    <h3>재료로 찾기</h3>
+    <p class="hint">이 재료를 주면 교환으로 얻을 수 있는 아이템을 보여줍니다.</p>
+    <input type="text" id="ts-material-input" list="ts-material-datalist" placeholder="재료 이름">
+    <datalist id="ts-material-datalist"></datalist>
+    <div id="ts-material-result" class="result"></div>
+  </section>
+
   <section id="lists" class="tab-panel">
     <h2>전체 목록</h2>
     <div id="list-tabs">
       <button class="list-tab-btn active" data-list="recipes">제작법</button>
       <button class="list-tab-btn" data-list="scrolls">스크롤</button>
       <button class="list-tab-btn" data-list="materials">원재료</button>
+      <button class="list-tab-btn" data-list="trades">교환</button>
+      <button class="list-tab-btn" data-list="purchases">구매</button>
     </div>
     <input type="text" id="list-filter" placeholder="검색...">
     <div id="list-result" class="result"></div>

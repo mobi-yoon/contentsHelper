@@ -86,6 +86,8 @@ button {
 .card .tag { color: gray; font-size: 0.85rem; }
 .card ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
 
+.hint { color: gray; font-size: 0.85rem; }
+
 #list-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; }
 
 footer { margin-top: 2rem; color: gray; font-size: 0.85rem; }
