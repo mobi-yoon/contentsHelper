@@ -303,11 +303,20 @@ function renderList() {
   if (currentList === "recipes") {
     const items = recipes.filter(r => r.name.toLowerCase().includes(filter));
     result.innerHTML = items.length
-      ? items.map(r => `
-          <div class="card">
-            <h3>${recipeLabel(r)}</h3>
-            ${renderMaterialsList(r.materials)}
-          </div>`).join("")
+      ? `<div class="table-wrap"><table class="data-table">
+          <thead><tr><th>대분류</th><th>소분류</th><th>이름 (산출)</th><th>재료</th></tr></thead>
+          <tbody>${items.map(r => {
+            const matText = r.materials.length
+              ? r.materials.map(m => `${m.name} x${m.qty}`).join(", ")
+              : "-";
+            return `<tr>
+                <td>${r.major_category}</td>
+                <td>${r.sub_category || "-"}</td>
+                <td>${r.name} (${r.output_qty}개)</td>
+                <td>${matText}</td>
+              </tr>`;
+          }).join("")}</tbody>
+        </table></div>`
       : "<p>없음</p>";
   } else if (currentList === "scrolls") {
     const items = scrolls.filter(s => s.target_name.toLowerCase().includes(filter));
@@ -524,6 +533,12 @@ function setupRecipeAdd() {
         major_category: major, sub_category: sub, name, output_qty: output, materials: materialRows,
       });
       if (error) throw error;
+
+      // 원재료로 먼저 등록돼 있던 이름에 제작법이 생기면 원재료 목록에서는 뺀다
+      if (materials.includes(name)) {
+        const { error: cleanupError } = await supabaseClient.from("materials").delete().eq("name", name);
+        if (cleanupError) throw cleanupError;
+      }
 
       showMsg(msg, `'${name}' 등록 완료.`, "success");
       document.getElementById("ra-name").value = "";

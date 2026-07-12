@@ -122,3 +122,15 @@ button.danger { background: #b91c1c; border-color: #b91c1c; }
 
 .tree { font-size: 0.9rem; }
 .tree-row { padding: 0.1rem 0; }
+
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table th, .data-table td {
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.data-table td:last-child { white-space: normal; }
+.data-table th { background: var(--bg-soft); }
