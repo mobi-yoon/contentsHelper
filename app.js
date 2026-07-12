@@ -372,39 +372,79 @@ function renderTradeCard(t) {
     </div>`;
 }
 
-function renderPurchaseCard(p) {
-  const price = p.price_currency ? `${p.price_amount}${p.price_currency}` : "가격 정보 없음";
-  return `<div class="card">
-      <h3>${p.item_name}</h3>
-      <div class="tag">${p.town} · ${p.npc} · 가격: ${price}${p.limit_text ? ` · 제한: ${p.limit_text}` : ""}</div>
-    </div>`;
+// recipes에 등록된 이름이면 그 소분류를, 아니면 "기타"를 카테고리로 사용
+function getItemCategory(name) {
+  const r = byName[name];
+  return (r && r.sub_category) || "기타";
+}
+
+function buildCombinedTradeItems() {
+  const tradeItems = trades.map(t => ({
+    kind: "교환",
+    town: t.town,
+    npc: t.npc,
+    name: t.item_name,
+    detail: `필요: ${t.required_name ? `${t.required_name} x${t.required_qty ?? "?"}` : "정보 없음"}${t.limit_text ? ` · ${t.limit_text}` : ""}`,
+    category: getItemCategory(t.item_name),
+  }));
+  const purchaseItems = purchases.map(p => ({
+    kind: "구매",
+    town: p.town,
+    npc: p.npc,
+    name: p.item_name,
+    detail: `가격: ${p.price_currency ? `${p.price_amount}${p.price_currency}` : "정보 없음"}${p.limit_text ? ` · ${p.limit_text}` : ""}`,
+    category: getItemCategory(p.item_name),
+  }));
+  return [...tradeItems, ...purchaseItems];
 }
 
 function setupTradeSearch() {
   const itemInput = document.getElementById("ts-item-input");
+  const townSelect = document.getElementById("ts-town-select");
+  const categorySelect = document.getElementById("ts-category-select");
   const itemResult = document.getElementById("ts-item-result");
   const materialInput = document.getElementById("ts-material-input");
   const materialResult = document.getElementById("ts-material-result");
 
-  itemInput.addEventListener("input", () => {
-    const name = itemInput.value.trim();
-    if (!name) { itemResult.innerHTML = ""; return; }
+  function refreshFilterOptions() {
+    const combined = buildCombinedTradeItems();
+    const towns = [...new Set(combined.map(i => i.town).filter(Boolean))].sort();
+    const categories = [...new Set(combined.map(i => i.category))].sort();
+    townSelect.innerHTML =
+      `<option value="">전체 마을</option>` + towns.map(t => `<option value="${escapeAttr(t)}">${t}</option>`).join("");
+    categorySelect.innerHTML =
+      `<option value="">전체 카테고리</option>` + categories.map(c => `<option value="${escapeAttr(c)}">${c}</option>`).join("");
+  }
 
-    const tradeMatches = tradesByItem[name] || [];
-    const purchaseMatches = purchasesByItem[name] || [];
+  function renderItemResults() {
+    const search = itemInput.value.trim().toLowerCase();
+    const town = townSelect.value;
+    const category = categorySelect.value;
 
-    if (!tradeMatches.length && !purchaseMatches.length) {
-      itemResult.innerHTML = "<p>교환/구매 정보가 없습니다.</p>";
-      return;
-    }
+    const items = buildCombinedTradeItems().filter(i =>
+      i.name.toLowerCase().includes(search) &&
+      (!town || i.town === town) &&
+      (!category || i.category === category)
+    );
 
-    const tradeHtml = tradeMatches.length
-      ? `<h4>교환으로 얻기</h4>${tradeMatches.map(renderTradeCard).join("")}`
-      : "";
-    const purchaseHtml = purchaseMatches.length
-      ? `<h4>구매하기</h4>${purchaseMatches.map(renderPurchaseCard).join("")}`
-      : "";
-    itemResult.innerHTML = tradeHtml + purchaseHtml;
+    itemResult.innerHTML = items.length
+      ? `<div class="table-wrap"><table class="data-table">
+          <thead><tr><th>구분</th><th>마을</th><th>NPC</th><th>아이템</th><th>상세</th><th>카테고리</th></tr></thead>
+          <tbody>${items.map(i => `<tr>
+              <td>${i.kind}</td><td>${i.town}</td><td>${i.npc}</td><td>${i.name}</td><td>${i.detail}</td><td>${i.category}</td>
+            </tr>`).join("")}</tbody>
+        </table></div>`
+      : "<p>조건에 맞는 아이템이 없습니다.</p>";
+  }
+
+  refreshFilterOptions();
+  renderItemResults();
+  itemInput.addEventListener("input", renderItemResults);
+  townSelect.addEventListener("change", renderItemResults);
+  categorySelect.addEventListener("change", renderItemResults);
+  window.addEventListener("makingdb:datachanged", () => {
+    refreshFilterOptions();
+    renderItemResults();
   });
 
   materialInput.addEventListener("input", () => {
