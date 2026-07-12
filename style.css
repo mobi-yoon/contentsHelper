@@ -123,6 +123,18 @@ button.danger { background: #b91c1c; border-color: #b91c1c; }
 .tree { font-size: 0.9rem; }
 .tree-row { padding: 0.1rem 0; }
 
+.scroll-checklist {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  margin: 0.5rem 0;
+}
+.scroll-check-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0; font-size: 0.9rem; }
+.scroll-check-row .scroll-check-label { flex: 1; }
+.scroll-check-row .sc-check-qty { width: 60px; margin: 0; }
+
 .table-wrap { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .data-table th, .data-table td {

@@ -185,7 +185,7 @@ function setupBreakdown() {
   });
 }
 
-function renderRequirements(name, qty, processed, raw, tree) {
+function renderProcessedRaw(processed, raw) {
   const processedEntries = Object.entries(processed);
   const rawEntries = Object.entries(raw);
 
@@ -200,15 +200,33 @@ function renderRequirements(name, qty, processed, raw, tree) {
     ? "<ul>" + rawEntries.map(([n, q]) => `<li>${n}: ${q}개</li>`).join("") + "</ul>"
     : "<p>없음</p>";
 
+  return `<h4>가공품</h4>${processedHtml}<h4>원재료</h4>${rawHtml}`;
+}
+
+function renderRequirements(name, qty, processed, raw, tree) {
   const treeHtml = tree.children.length
     ? `<div class="tree">${renderTree(tree)}</div>`
     : "<p>없음</p>";
 
   return `
     <p><strong>${name}</strong> ${qty}개 제작 시 필요</p>
-    <h4>가공품</h4>${processedHtml}
-    <h4>원재료</h4>${rawHtml}
+    ${renderProcessedRaw(processed, raw)}
     <h4>제작 트리</h4>${treeHtml}`;
+}
+
+function mergeProcessed(target, source) {
+  for (const [name, info] of Object.entries(source)) {
+    if (!target[name]) target[name] = { qty: 0, crafts: 0, produced: 0 };
+    target[name].qty += info.qty;
+    target[name].crafts += info.crafts;
+    target[name].produced += info.produced;
+  }
+}
+
+function mergeRaw(target, source) {
+  for (const [name, qty] of Object.entries(source)) {
+    target[name] = (target[name] || 0) + qty;
+  }
 }
 
 // 어떤 재료가 무엇을 만드는 데 쓰이는지 계층으로 보여주는 트리 (루트 자신은 표시하지 않음)
@@ -229,8 +247,7 @@ function renderTreeNode(node, depth) {
 
 function setupScrollCalc() {
   const townSelect = document.getElementById("sc-town-select");
-  const select = document.getElementById("sc-select");
-  const qtyInput = document.getElementById("sc-qty");
+  const checklist = document.getElementById("sc-checklist");
   const btn = document.getElementById("sc-run");
   const result = document.getElementById("sc-result");
 
@@ -241,42 +258,79 @@ function setupScrollCalc() {
       towns.map(t => `<option value="${escapeAttr(t)}">${t}</option>`).join("");
   }
 
-  function refreshScrollOptions() {
+  function refreshChecklist() {
     const town = townSelect.value;
     const filtered = town ? scrolls.filter(s => s.town === town) : scrolls;
-    select.innerHTML = filtered
-      .map(s => `<option value="${s.id}">[${s.scroll_type}] ${s.target_name} (${s.town || "미상"})</option>`)
+    checklist.innerHTML = filtered
+      .map(s => `
+        <label class="scroll-check-row">
+          <input type="checkbox" class="sc-check" data-id="${s.id}">
+          <span class="scroll-check-label">[${s.scroll_type}] ${s.target_name} (${s.town || "미상"})</span>
+          <input type="number" class="sc-check-qty" data-id="${s.id}" min="1" value="1">
+        </label>`)
       .join("");
   }
 
   refreshTowns();
-  refreshScrollOptions();
-  townSelect.addEventListener("change", refreshScrollOptions);
+  refreshChecklist();
+  townSelect.addEventListener("change", refreshChecklist);
   window.addEventListener("makingdb:datachanged", () => {
     refreshTowns();
-    refreshScrollOptions();
+    refreshChecklist();
+  });
+
+  document.getElementById("sc-select-all-btn").addEventListener("click", () => {
+    checklist.querySelectorAll(".sc-check").forEach(cb => { cb.checked = true; });
+  });
+  document.getElementById("sc-select-none-btn").addEventListener("click", () => {
+    checklist.querySelectorAll(".sc-check").forEach(cb => { cb.checked = false; });
   });
 
   btn.addEventListener("click", () => {
-    const scroll = scrolls.find(s => String(s.id) === select.value);
-    if (!scroll) {
-      result.innerHTML = "<p>등록된 스크롤이 없습니다.</p>";
-      return;
-    }
-    const n = parseInt(qtyInput.value, 10) || 1;
-    const totalQty = scroll.qty_per_scroll * n;
-
-    let tree;
-    try {
-      tree = breakdownTree(scroll.target_name, totalQty);
-    } catch (e) {
-      result.innerHTML = `<p>오류: ${e.message}</p>`;
+    const checked = [...checklist.querySelectorAll(".sc-check:checked")];
+    if (checked.length === 0) {
+      result.innerHTML = "<p>스크롤을 1개 이상 선택해주세요.</p>";
       return;
     }
 
-    const { processed, raw } = summarizeRequirements(tree);
-    const header = `<p>'${scroll.scroll_type} 스크롤: ${scroll.target_name}' ${n}장 -> ${scroll.target_name} ${totalQty}개 필요</p>`;
-    result.innerHTML = header + renderRequirements(scroll.target_name, totalQty, processed, raw, tree).replace(/<p><strong>.*?<\/p>/, "");
+    const combinedProcessed = {};
+    const combinedRaw = {};
+    const summaryLines = [];
+    const detailSections = [];
+
+    for (const cb of checked) {
+      const scroll = scrolls.find(s => String(s.id) === cb.dataset.id);
+      const qtyInput = checklist.querySelector(`.sc-check-qty[data-id="${cb.dataset.id}"]`);
+      const n = parseInt(qtyInput.value, 10) || 1;
+      const totalQty = scroll.qty_per_scroll * n;
+
+      let tree;
+      try {
+        tree = breakdownTree(scroll.target_name, totalQty);
+      } catch (e) {
+        result.innerHTML = `<p>오류 ('${scroll.target_name}'): ${e.message}</p>`;
+        return;
+      }
+
+      const { processed, raw } = summarizeRequirements(tree);
+      mergeProcessed(combinedProcessed, processed);
+      mergeRaw(combinedRaw, raw);
+
+      summaryLines.push(`'${scroll.scroll_type} 스크롤: ${scroll.target_name}' ${n}장 -> ${totalQty}개`);
+      detailSections.push(`
+        <div class="card">
+          <h4>${scroll.scroll_type} 스크롤: ${scroll.target_name} (${n}장 → ${totalQty}개)</h4>
+          ${renderProcessedRaw(processed, raw)}
+          ${tree.children.length ? `<div class="tree">${renderTree(tree)}</div>` : ""}
+        </div>`);
+    }
+
+    result.innerHTML = `
+      <p>선택한 ${checked.length}개 스크롤: ${summaryLines.join(" · ")}</p>
+      <h3>합계</h3>
+      ${renderProcessedRaw(combinedProcessed, combinedRaw)}
+      <h3>스크롤별 상세</h3>
+      ${detailSections.join("")}`;
   });
 }
 

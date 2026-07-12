@@ -48,8 +48,9 @@
   <section id="scroll-calc" class="tab-panel">
     <h2>스크롤 개수별 필요 재료</h2>
     <select id="sc-town-select"></select>
-    <select id="sc-select"></select>
-    <input type="number" id="sc-qty" placeholder="장수" min="1" value="1">
+    <button type="button" id="sc-select-all-btn">전체 선택</button>
+    <button type="button" id="sc-select-none-btn">선택 해제</button>
+    <div id="sc-checklist" class="scroll-checklist"></div>
     <button id="sc-run">계산</button>
     <div id="sc-result" class="result"></div>
   </section>
