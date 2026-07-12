@@ -228,17 +228,37 @@ function renderTreeNode(node, depth) {
 // ---------- 4. 스크롤 계산 ----------
 
 function setupScrollCalc() {
+  const townSelect = document.getElementById("sc-town-select");
   const select = document.getElementById("sc-select");
   const qtyInput = document.getElementById("sc-qty");
   const btn = document.getElementById("sc-run");
   const result = document.getElementById("sc-result");
 
-  select.innerHTML = scrolls
-    .map((s, i) => `<option value="${i}">[${s.scroll_type}] ${s.target_name} (${s.town || "미상"})</option>`)
-    .join("");
+  function refreshTowns() {
+    const towns = [...new Set(scrolls.map(s => s.town).filter(Boolean))].sort();
+    townSelect.innerHTML =
+      `<option value="">전체 마을</option>` +
+      towns.map(t => `<option value="${escapeAttr(t)}">${t}</option>`).join("");
+  }
+
+  function refreshScrollOptions() {
+    const town = townSelect.value;
+    const filtered = town ? scrolls.filter(s => s.town === town) : scrolls;
+    select.innerHTML = filtered
+      .map(s => `<option value="${s.id}">[${s.scroll_type}] ${s.target_name} (${s.town || "미상"})</option>`)
+      .join("");
+  }
+
+  refreshTowns();
+  refreshScrollOptions();
+  townSelect.addEventListener("change", refreshScrollOptions);
+  window.addEventListener("makingdb:datachanged", () => {
+    refreshTowns();
+    refreshScrollOptions();
+  });
 
   btn.addEventListener("click", () => {
-    const scroll = scrolls[select.value];
+    const scroll = scrolls.find(s => String(s.id) === select.value);
     if (!scroll) {
       result.innerHTML = "<p>등록된 스크롤이 없습니다.</p>";
       return;
