@@ -752,24 +752,6 @@ function setupRecipeManage() {
 
 // ---------- 스크롤 추가 ----------
 
-function validateScrollTarget(scrollType, targetName) {
-  const major = getMajorCategory(targetName);
-  if (scrollType === "채집" || scrollType === "채광") {
-    if (major !== null) {
-      return { ok: false, reason: `'${targetName}'은(는) 이미 제작법이 있는 항목(${major})이라 ${scrollType} 스크롤 대상이 될 수 없습니다.` };
-    }
-    return { ok: true };
-  }
-  if (scrollType === "제작" || scrollType === "요리") {
-    if (major !== "제작품") {
-      const reason = major === null ? "제작법이 없는 재료템" : `'${major}'로 분류된 항목`;
-      return { ok: false, reason: `'${targetName}'은(는) ${reason}이라 ${scrollType} 스크롤 대상이 될 수 없습니다.` };
-    }
-    return { ok: true };
-  }
-  return { ok: true };
-}
-
 function scrollExists(scrollType, targetName) {
   return scrolls.some(s => s.scroll_type === scrollType && s.target_name === targetName);
 }
@@ -785,9 +767,6 @@ function setupScrollAdd() {
     if (!scrollType) { showMsg(msg, "스크롤 종류를 입력해주세요.", "error"); return; }
     if (!town) { showMsg(msg, "마을을 입력해주세요.", "error"); return; }
     if (!targetName) { showMsg(msg, "대상 아이템 이름을 입력해주세요.", "error"); return; }
-
-    const { ok, reason } = validateScrollTarget(scrollType, targetName);
-    if (!ok) { showMsg(msg, reason, "error"); return; }
 
     if (scrollExists(scrollType, targetName)) {
       showMsg(msg, `'${scrollType} 스크롤: ${targetName}'은(는) 이미 등록되어 있습니다.`, "error");
