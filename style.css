@@ -89,3 +89,32 @@ button {
 #list-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; }
 
 footer { margin-top: 2rem; color: gray; font-size: 0.85rem; }
+
+.hint { color: gray; font-size: 0.85rem; }
+
+#edit-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.8rem 0; }
+
+.edit-panel { display: none; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+.edit-panel.active { display: block; }
+
+.field-group { display: flex; flex-direction: column; gap: 0.5rem; max-width: 420px; margin-bottom: 0.8rem; }
+.field-group label { display: flex; flex-direction: column; font-size: 0.9rem; gap: 0.2rem; }
+.field-group input, .field-group select { max-width: 100%; }
+
+.materials-box { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.5rem; max-width: 420px; }
+.material-row { display: flex; gap: 0.4rem; align-items: center; }
+.material-row .mat-name { flex: 1; max-width: none; }
+.material-row .mat-qty { width: 70px; }
+.material-row .mat-remove {
+  padding: 0.3rem 0.6rem;
+  border-color: #b91c1c;
+  background: transparent;
+  color: #b91c1c;
+}
+
+button.danger { background: #b91c1c; border-color: #b91c1c; }
+
+.hidden { display: none; }
+
+.result.error { color: #b91c1c; }
+.result.success { color: #16a34a; }

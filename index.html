@@ -9,7 +9,7 @@
 <body>
 <header>
   <h1>MakingDB</h1>
-  <p class="sub">제작법 · 스크롤 조회 (편집은 로컬 CLI에서)</p>
+  <p class="sub">제작법 · 스크롤 조회 및 편집</p>
 </header>
 
 <nav id="tabs">
@@ -18,6 +18,7 @@
   <button class="tab-btn" data-tab="breakdown">필요 재료 계산</button>
   <button class="tab-btn" data-tab="scroll-calc">스크롤 계산</button>
   <button class="tab-btn" data-tab="lists">전체 목록</button>
+  <button class="tab-btn" data-tab="edit">편집</button>
 </nav>
 
 <main>
@@ -61,6 +62,131 @@
     </div>
     <input type="text" id="list-filter" placeholder="필터...">
     <div id="list-result" class="result"></div>
+  </section>
+
+  <section id="edit" class="tab-panel">
+    <h2>편집</h2>
+    <p class="hint">여기서 저장하면 GitHub 저장소에 바로 커밋되고, 잠시 후 사이트에 반영됩니다.</p>
+
+    <div id="edit-tabs">
+      <button class="edit-tab-btn active" data-edit="edit-settings">GitHub 연결</button>
+      <button class="edit-tab-btn" data-edit="edit-recipe-add">제작법 추가</button>
+      <button class="edit-tab-btn" data-edit="edit-recipe-manage">제작법 수정/삭제</button>
+      <button class="edit-tab-btn" data-edit="edit-scroll-add">스크롤 추가</button>
+      <button class="edit-tab-btn" data-edit="edit-scroll-manage">스크롤 수정/삭제</button>
+      <button class="edit-tab-btn" data-edit="edit-material-manage">원재료 관리</button>
+    </div>
+
+    <div id="edit-settings" class="edit-panel active">
+      <h3>GitHub 연결 설정</h3>
+      <p class="hint">
+        저장 시 GitHub API로 이 저장소에 직접 커밋합니다. Personal Access Token이 필요합니다
+        (권장: Fine-grained token, 이 저장소에 대해 Contents: Read/Write 권한만 부여).
+        토큰은 이 브라우저의 localStorage에만 저장되고, GitHub API 외에는 전송되지 않습니다.
+        공용 컴퓨터에서는 사용 후 아래에서 토큰을 지워주세요.
+      </p>
+      <div class="field-group">
+        <label>저장소 소유자 <input type="text" id="gh-owner"></label>
+        <label>저장소 이름 <input type="text" id="gh-repo"></label>
+        <label>브랜치 <input type="text" id="gh-branch"></label>
+        <label>Personal Access Token <input type="password" id="gh-token" placeholder="ghp_..."></label>
+      </div>
+      <button id="gh-save-btn">저장</button>
+      <button id="gh-clear-btn">토큰 지우기</button>
+      <button id="gh-test-btn">연결 테스트</button>
+      <div id="gh-status" class="result"></div>
+    </div>
+
+    <div id="edit-recipe-add" class="edit-panel">
+      <h3>제작법 추가</h3>
+      <div class="field-group">
+        <label>대분류
+          <select id="ra-major">
+            <option value="가공품">가공품</option>
+            <option value="제작품">제작품</option>
+          </select>
+        </label>
+        <label>소분류 <input type="text" id="ra-sub" list="sub-datalist" placeholder="예: 무기 (없으면 비워둠)"></label>
+        <label>완제품 이름 <input type="text" id="ra-name"></label>
+        <label>산출 수량 <input type="number" id="ra-output" min="1" value="1"></label>
+      </div>
+      <h4>재료</h4>
+      <div id="ra-materials" class="materials-box"></div>
+      <button type="button" id="ra-add-material-btn">+ 재료 추가</button>
+      <div>
+        <button id="ra-save-btn">저장 (GitHub 커밋)</button>
+      </div>
+      <div id="ra-msg" class="result"></div>
+    </div>
+
+    <div id="edit-recipe-manage" class="edit-panel">
+      <h3>제작법 수정/삭제</h3>
+      <label>완제품 선택 <input type="text" id="rm-select" list="bd-datalist" placeholder="완제품 이름 입력"></label>
+      <button type="button" id="rm-load-btn">불러오기</button>
+      <div id="rm-form" class="hidden">
+        <div class="field-group">
+          <label>대분류
+            <select id="rm-major">
+              <option value="가공품">가공품</option>
+              <option value="제작품">제작품</option>
+            </select>
+          </label>
+          <label>소분류 <input type="text" id="rm-sub" list="sub-datalist"></label>
+          <label>산출 수량 <input type="number" id="rm-output" min="1"></label>
+        </div>
+        <h4>재료</h4>
+        <div id="rm-materials" class="materials-box"></div>
+        <button type="button" id="rm-add-material-btn">+ 재료 추가</button>
+        <div>
+          <button id="rm-save-btn">수정 저장 (GitHub 커밋)</button>
+          <button id="rm-delete-btn" class="danger">삭제 (GitHub 커밋)</button>
+        </div>
+      </div>
+      <div id="rm-msg" class="result"></div>
+    </div>
+
+    <div id="edit-scroll-add" class="edit-panel">
+      <h3>스크롤 추가</h3>
+      <div class="field-group">
+        <label>스크롤 종류 <input type="text" id="sa-type" list="scroll-type-datalist" placeholder="채집/채광/제작/요리/새 이름"></label>
+        <label>마을 <input type="text" id="sa-town" list="town-datalist" placeholder="마을 이름"></label>
+        <label>대상 아이템 이름 <input type="text" id="sa-target" list="all-item-datalist"></label>
+        <label>스크롤 1장당 필요 수량 <input type="number" id="sa-qty" min="1" value="1"></label>
+      </div>
+      <button id="sa-save-btn">저장 (GitHub 커밋)</button>
+      <div id="sa-msg" class="result"></div>
+    </div>
+
+    <div id="edit-scroll-manage" class="edit-panel">
+      <h3>스크롤 수정/삭제</h3>
+      <select id="sm-select"></select>
+      <button type="button" id="sm-load-btn">불러오기</button>
+      <div id="sm-form" class="hidden">
+        <div class="field-group">
+          <label>마을 <input type="text" id="sm-town" list="town-datalist"></label>
+          <label>스크롤 1장당 필요 수량 <input type="number" id="sm-qty" min="1"></label>
+        </div>
+        <div>
+          <button id="sm-save-btn">수정 저장 (GitHub 커밋)</button>
+          <button id="sm-delete-btn" class="danger">삭제 (GitHub 커밋)</button>
+        </div>
+      </div>
+      <div id="sm-msg" class="result"></div>
+    </div>
+
+    <div id="edit-material-manage" class="edit-panel">
+      <h3>원재료 관리</h3>
+      <label>새 원재료 이름 <input type="text" id="mm-name"></label>
+      <button id="mm-add-btn">추가 (GitHub 커밋)</button>
+      <div id="mm-msg" class="result"></div>
+      <h4>등록된 원재료</h4>
+      <div id="mm-list" class="result"></div>
+    </div>
+
+    <datalist id="sub-datalist"></datalist>
+    <datalist id="scroll-type-datalist"></datalist>
+    <datalist id="town-datalist"></datalist>
+    <datalist id="all-item-datalist"></datalist>
   </section>
 </main>
 
