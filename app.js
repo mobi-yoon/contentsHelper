@@ -1,6 +1,7 @@
 const SUPABASE_URL = "https://ytnbvlaryswpthwqqdkd.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0bmJ2bGFyeXN3cHRod3FxZGtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MjQxNzMsImV4cCI6MjA5OTQwMDE3M30.bHHCMasS5LMu_lcNw1noW_oyqFz__f-fZmS40-dPgYs";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const ADMIN_UID = "09cb6f2d-8ef1-4dad-9de1-0ac0230c116c";
 
 let recipes = [];
 let scrolls = [];
@@ -774,16 +775,21 @@ function updateAuthUI(session) {
   const loggedOut = document.getElementById("auth-loggedout");
   const loggedIn = document.getElementById("auth-loggedin");
   const editBody = document.getElementById("edit-body");
+  const notAdmin = document.getElementById("edit-not-admin");
 
   if (session) {
     loggedOut.classList.add("hidden");
     loggedIn.classList.remove("hidden");
-    editBody.classList.remove("hidden");
     document.getElementById("auth-user").textContent = `로그인됨: ${session.user.email}`;
+
+    const isAdmin = session.user.id === ADMIN_UID;
+    editBody.classList.toggle("hidden", !isAdmin);
+    notAdmin.classList.toggle("hidden", isAdmin);
   } else {
     loggedOut.classList.remove("hidden");
     loggedIn.classList.add("hidden");
     editBody.classList.add("hidden");
+    notAdmin.classList.add("hidden");
   }
 }
 
@@ -802,6 +808,26 @@ function setupAuth() {
     }
     document.getElementById("auth-password").value = "";
     showMsg(msg, "", "");
+  });
+
+  document.getElementById("auth-signup-btn").addEventListener("click", async () => {
+    const msg = document.getElementById("auth-msg");
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+    if (!email || !password) { showMsg(msg, "이메일과 비밀번호를 입력해주세요.", "error"); return; }
+
+    showMsg(msg, "가입 처리 중...", "");
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    if (error) {
+      showMsg(msg, error.message, "error");
+      return;
+    }
+    if (data.session) {
+      document.getElementById("auth-password").value = "";
+      showMsg(msg, "", "");
+    } else {
+      showMsg(msg, "가입 완료. 메일함에서 인증 링크를 눌러주세요.", "success");
+    }
   });
 
   document.getElementById("auth-logout-btn").addEventListener("click", async () => {

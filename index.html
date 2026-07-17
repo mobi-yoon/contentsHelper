@@ -95,6 +95,7 @@
         <label>이메일 <input type="text" id="auth-email"></label>
         <label>비밀번호 <input type="password" id="auth-password"></label>
         <button id="auth-login-btn">로그인</button>
+        <button id="auth-signup-btn">회원가입</button>
         <div id="auth-msg" class="result"></div>
       </div>
       <div id="auth-loggedin" class="hidden">
@@ -102,6 +103,8 @@
         <button id="auth-logout-btn">로그아웃</button>
       </div>
     </div>
+
+    <p id="edit-not-admin" class="hidden">로그인은 되었지만 관리자 계정이 아니라 편집 권한이 없습니다.</p>
 
     <div id="edit-body" class="hidden">
       <div id="edit-tabs">
