@@ -41,7 +41,7 @@
     <h2>완제품 n개 제작 시 필요 재료</h2>
     <input type="text" id="bd-name" list="bd-datalist" placeholder="완제품 이름">
     <datalist id="bd-datalist"></datalist>
-    <input type="number" id="bd-qty" placeholder="개수" min="1" value="1">
+    <input type="text" inputmode="numeric" pattern="[0-9]*" id="bd-qty" placeholder="개수" value="1">
     <button id="bd-run">계산</button>
     <div id="bd-result" class="result"></div>
   </section>
@@ -123,7 +123,7 @@
           </label>
           <label>소분류 <input type="text" id="ra-sub" list="sub-datalist" placeholder="예: 무기 (없으면 비워둠)"></label>
           <label>완제품 이름 <input type="text" id="ra-name"></label>
-          <label>산출 수량 <input type="number" id="ra-output" min="1" value="1"></label>
+          <label>산출 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="ra-output" value="1"></label>
         </div>
         <h4>재료</h4>
         <div id="ra-materials" class="materials-box"></div>
@@ -147,7 +147,7 @@
               </select>
             </label>
             <label>소분류 <input type="text" id="rm-sub" list="sub-datalist"></label>
-            <label>산출 수량 <input type="number" id="rm-output" min="1"></label>
+            <label>산출 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="rm-output"></label>
           </div>
           <h4>재료</h4>
           <div id="rm-materials" class="materials-box"></div>
@@ -166,7 +166,7 @@
           <label>스크롤 종류 <input type="text" id="sa-type" list="scroll-type-datalist" placeholder="채집/채광/제작/요리/새 이름"></label>
           <label>마을 <input type="text" id="sa-town" list="town-datalist" placeholder="마을 이름"></label>
           <label>대상 아이템 이름 <input type="text" id="sa-target" list="all-item-datalist"></label>
-          <label>스크롤 1장당 필요 수량 <input type="number" id="sa-qty" min="1" value="1"></label>
+          <label>스크롤 1장당 필요 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="sa-qty" value="1"></label>
         </div>
         <button id="sa-save-btn">저장</button>
         <div id="sa-msg" class="result"></div>
@@ -179,7 +179,7 @@
         <div id="sm-form" class="hidden">
           <div class="field-group">
             <label>마을 <input type="text" id="sm-town" list="town-datalist"></label>
-            <label>스크롤 1장당 필요 수량 <input type="number" id="sm-qty" min="1"></label>
+            <label>스크롤 1장당 필요 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="sm-qty"></label>
           </div>
           <div>
             <button id="sm-save-btn">수정 저장</button>

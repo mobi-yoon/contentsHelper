@@ -294,7 +294,7 @@ function setupScrollCalc() {
         <label class="scroll-check-row">
           <input type="checkbox" class="sc-check" data-id="${s.id}">
           <span class="scroll-check-label">[${s.scroll_type}] ${s.target_name} (${s.town || "미상"})</span>
-          <input type="number" class="sc-check-qty" data-id="${s.id}" min="1" value="1">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" class="sc-check-qty" data-id="${s.id}" value="1">
         </label>`)
       .join("");
   }
@@ -733,7 +733,7 @@ function addMaterialRow(container, name = "", qty = 1) {
   row.className = "material-row";
   row.innerHTML = `
     <input type="text" class="mat-name" list="all-item-datalist" placeholder="재료 이름" value="${escapeAttr(name)}">
-    <input type="number" class="mat-qty" min="1" value="${qty}">
+    <input type="text" inputmode="numeric" pattern="[0-9]*" class="mat-qty" value="${qty}">
     <button type="button" class="mat-remove">삭제</button>
   `;
   row.querySelector(".mat-remove").addEventListener("click", () => row.remove());
