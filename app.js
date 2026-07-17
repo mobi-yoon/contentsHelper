@@ -776,11 +776,15 @@ function updateAuthUI(session) {
   const loggedIn = document.getElementById("auth-loggedin");
   const editBody = document.getElementById("edit-body");
   const notAdmin = document.getElementById("edit-not-admin");
+  const editLoggedOutMsg = document.getElementById("edit-loggedout-msg");
+  const accountBody = document.getElementById("account-body");
 
   if (session) {
     loggedOut.classList.add("hidden");
     loggedIn.classList.remove("hidden");
     document.getElementById("auth-user").textContent = `로그인됨: ${session.user.email}`;
+    editLoggedOutMsg.classList.add("hidden");
+    accountBody.classList.remove("hidden");
 
     const isAdmin = session.user.id === ADMIN_UID;
     editBody.classList.toggle("hidden", !isAdmin);
@@ -790,6 +794,8 @@ function updateAuthUI(session) {
     loggedIn.classList.add("hidden");
     editBody.classList.add("hidden");
     notAdmin.classList.add("hidden");
+    editLoggedOutMsg.classList.remove("hidden");
+    accountBody.classList.add("hidden");
   }
 }
 

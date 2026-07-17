@@ -19,6 +19,7 @@
   <button class="tab-btn" data-tab="scroll-calc">스크롤 계산</button>
   <button class="tab-btn" data-tab="trade-search">교환/구매 검색</button>
   <button class="tab-btn" data-tab="lists">전체 목록</button>
+  <button class="tab-btn" data-tab="account">계정</button>
   <button class="tab-btn" data-tab="edit">편집</button>
 </nav>
 
@@ -87,8 +88,8 @@
     <div id="list-result" class="result"></div>
   </section>
 
-  <section id="edit" class="tab-panel">
-    <h2>편집</h2>
+  <section id="account" class="tab-panel">
+    <h2>계정</h2>
 
     <div id="auth-box">
       <div id="auth-loggedout">
@@ -104,6 +105,15 @@
       </div>
     </div>
 
+    <div id="account-body" class="hidden">
+      <p>캐릭터별 가방 · 보관함 · 공용 보관함 관리 기능은 곧 추가됩니다.</p>
+    </div>
+  </section>
+
+  <section id="edit" class="tab-panel">
+    <h2>편집</h2>
+
+    <p id="edit-loggedout-msg"><strong>계정</strong> 탭에서 먼저 로그인해주세요.</p>
     <p id="edit-not-admin" class="hidden">로그인은 되었지만 관리자 계정이 아니라 편집 권한이 없습니다.</p>
 
     <div id="edit-body" class="hidden">
