@@ -799,6 +799,7 @@ function updateAuthUI(session) {
 
     editBody.classList.toggle("hidden", !isAdmin);
     notAdmin.classList.toggle("hidden", isAdmin);
+    refreshAccountData();
   } else {
     loggedOut.classList.remove("hidden");
     loggedIn.classList.add("hidden");
@@ -806,6 +807,7 @@ function updateAuthUI(session) {
     notAdmin.classList.add("hidden");
     editLoggedOutMsg.classList.remove("hidden");
     accountBody.classList.add("hidden");
+    clearAccountData();
   }
 }
 
@@ -1184,6 +1186,199 @@ function setupMaterialManage() {
   });
 }
 
+// ---------- 계정: 캐릭터 / 가방 / 보관함 ----------
+
+function setupItemTable({ inputId, qtyId, saveId, searchId, listId, table, extraFields, matchFields }) {
+  const input = document.getElementById(inputId);
+  const qtyInput = document.getElementById(qtyId);
+  const saveBtn = document.getElementById(saveId);
+  const search = document.getElementById(searchId);
+  const list = document.getElementById(listId);
+  let items = [];
+
+  function render() {
+    const query = search.value.trim().toLowerCase();
+    const filtered = items.filter(it => it.item_name.toLowerCase().includes(query));
+
+    list.innerHTML = filtered.length
+      ? `<div class="table-wrap"><table class="data-table">
+          <thead><tr><th>삭제</th><th>이름</th><th>수량</th></tr></thead>
+          <tbody>${filtered.map(it => `
+            <tr>
+              <td><button type="button" class="item-remove" data-id="${it.id}">삭제</button></td>
+              <td class="item-name-cell" data-name="${escapeAttr(it.item_name)}" data-qty="${it.qty}">${it.item_name}</td>
+              <td>${it.qty}</td>
+            </tr>`).join("")}</tbody>
+        </table></div>`
+      : "<p>없음</p>";
+
+    list.querySelectorAll(".item-remove").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("삭제하시겠습니까?")) return;
+        const { error } = await supabaseClient.from(table).delete().eq("id", btn.dataset.id);
+        if (error) { alert(friendlyError(error)); return; }
+        await reload();
+      });
+    });
+
+    list.querySelectorAll(".item-name-cell").forEach(cell => {
+      cell.addEventListener("click", () => {
+        input.value = cell.dataset.name;
+        qtyInput.value = cell.dataset.qty;
+        input.focus();
+      });
+    });
+  }
+
+  async function reload() {
+    const f = extraFields();
+    if (!f) { items = []; render(); return; }
+    let query = supabaseClient.from(table).select("*");
+    for (const [k, v] of Object.entries(f)) query = query.eq(k, v);
+    const { data, error } = await query;
+    if (error) { console.error(error); items = []; render(); return; }
+    items = data || [];
+    render();
+  }
+
+  function clear() {
+    items = [];
+    render();
+  }
+
+  search.addEventListener("input", render);
+
+  saveBtn.addEventListener("click", async () => {
+    const f = extraFields();
+    if (!f) return;
+    const name = input.value.trim();
+    const qty = parseInt(qtyInput.value, 10);
+    if (!name) { alert("아이템 이름을 입력해주세요."); return; }
+    if (!Number.isInteger(qty) || qty < 0) { alert("수량을 올바르게 입력해주세요."); return; }
+
+    const { error } = await supabaseClient
+      .from(table)
+      .upsert({ ...f, item_name: name, qty }, { onConflict: matchFields.join(",") });
+    if (error) { alert(friendlyError(error)); return; }
+    input.value = "";
+    qtyInput.value = "1";
+    await reload();
+  });
+
+  return { reload, clear };
+}
+
+let characters = [];
+let selectedCharacterId = null;
+let bagTable, storageTable, acctTable;
+
+async function loadCharacters() {
+  const { data, error } = await supabaseClient
+    .from("characters")
+    .select("*")
+    .order("sort_order", { ascending: true });
+  if (error) { console.error(error); return; }
+  characters = data || [];
+
+  if (!characters.some(c => c.id === selectedCharacterId)) {
+    selectedCharacterId = characters.length ? characters[0].id : null;
+  }
+  renderCharSelect();
+}
+
+function renderCharSelect() {
+  const select = document.getElementById("char-select");
+  select.innerHTML = characters.length
+    ? characters.map(c => `<option value="${c.id}">${c.name}</option>`).join("")
+    : `<option value="">(캐릭터 없음)</option>`;
+  select.value = selectedCharacterId || "";
+  document.getElementById("char-inventory-section").classList.toggle("hidden", !selectedCharacterId);
+  document.getElementById("char-delete-btn").disabled = !selectedCharacterId;
+}
+
+function setupAccountManage() {
+  bagTable = setupItemTable({
+    inputId: "bag-item-input", qtyId: "bag-item-qty", saveId: "bag-item-save-btn",
+    searchId: "bag-search", listId: "bag-list",
+    table: "character_items",
+    extraFields: () => selectedCharacterId ? { character_id: selectedCharacterId, container: "bag" } : null,
+    matchFields: ["character_id", "container", "item_name"],
+  });
+
+  storageTable = setupItemTable({
+    inputId: "storage-item-input", qtyId: "storage-item-qty", saveId: "storage-item-save-btn",
+    searchId: "storage-search", listId: "storage-list",
+    table: "character_items",
+    extraFields: () => selectedCharacterId ? { character_id: selectedCharacterId, container: "storage" } : null,
+    matchFields: ["character_id", "container", "item_name"],
+  });
+
+  acctTable = setupItemTable({
+    inputId: "acct-item-input", qtyId: "acct-item-qty", saveId: "acct-item-save-btn",
+    searchId: "acct-search", listId: "acct-list",
+    table: "account_storage",
+    extraFields: () => currentSession ? { user_id: currentSession.user.id } : null,
+    matchFields: ["user_id", "item_name"],
+  });
+
+  document.getElementById("char-select").addEventListener("change", async (e) => {
+    selectedCharacterId = e.target.value ? Number(e.target.value) : null;
+    renderCharSelect();
+    await Promise.all([bagTable.reload(), storageTable.reload()]);
+  });
+
+  document.getElementById("char-add-btn").addEventListener("click", async () => {
+    const msg = document.getElementById("char-msg");
+    const nameInput = document.getElementById("char-new-name");
+    const name = nameInput.value.trim();
+    if (!name) { showMsg(msg, "캐릭터 이름을 입력해주세요.", "error"); return; }
+    if (characters.length >= 6) { showMsg(msg, "캐릭터는 최대 6개까지 등록할 수 있습니다.", "error"); return; }
+    if (characters.some(c => c.name === name)) { showMsg(msg, "이미 등록된 캐릭터 이름입니다.", "error"); return; }
+
+    const { data, error } = await supabaseClient
+      .from("characters")
+      .insert({ user_id: currentSession.user.id, name, sort_order: characters.length })
+      .select()
+      .single();
+    if (error) { showMsg(msg, friendlyError(error), "error"); return; }
+
+    nameInput.value = "";
+    showMsg(msg, "", "");
+    selectedCharacterId = data.id;
+    await loadCharacters();
+    await Promise.all([bagTable.reload(), storageTable.reload()]);
+  });
+
+  document.getElementById("char-delete-btn").addEventListener("click", async () => {
+    if (!selectedCharacterId) return;
+    const char = characters.find(c => c.id === selectedCharacterId);
+    if (!confirm(`'${char.name}' 캐릭터를 삭제하시겠습니까? 가방/보관함 데이터도 함께 삭제됩니다.`)) return;
+
+    const { error } = await supabaseClient.from("characters").delete().eq("id", selectedCharacterId);
+    if (error) { alert(friendlyError(error)); return; }
+
+    selectedCharacterId = null;
+    await loadCharacters();
+    await Promise.all([bagTable.reload(), storageTable.reload()]);
+  });
+}
+
+async function refreshAccountData() {
+  if (!bagTable) return;
+  await loadCharacters();
+  await Promise.all([bagTable.reload(), storageTable.reload(), acctTable.reload()]);
+}
+
+function clearAccountData() {
+  if (!bagTable) return;
+  characters = [];
+  selectedCharacterId = null;
+  renderCharSelect();
+  bagTable.clear();
+  storageTable.clear();
+  acctTable.clear();
+}
+
 // ---------- 초기화 ----------
 
 async function init() {
@@ -1205,6 +1400,7 @@ async function init() {
     setupScrollAdd();
     setupScrollManage();
     setupMaterialManage();
+    setupAccountManage();
     refreshEditDatalists();
     refreshTradeSearchDatalists();
     renderList();

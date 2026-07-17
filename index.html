@@ -106,7 +106,44 @@
     </div>
 
     <div id="account-body" class="hidden">
-      <p>캐릭터별 가방 · 보관함 · 공용 보관함 관리 기능은 곧 추가됩니다.</p>
+      <h3>캐릭터</h3>
+      <div class="field-group">
+        <select id="char-select"></select>
+        <input type="text" id="char-new-name" placeholder="새 캐릭터 이름">
+        <button type="button" id="char-add-btn">캐릭터 추가</button>
+        <button type="button" id="char-delete-btn" class="danger">캐릭터 삭제</button>
+      </div>
+      <div id="char-msg" class="result"></div>
+
+      <div id="char-inventory-section" class="hidden">
+        <h3>가방</h3>
+        <div class="field-group">
+          <input type="text" id="bag-item-input" list="all-item-datalist" placeholder="아이템 이름 (표에서 클릭하면 불러옴)">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" id="bag-item-qty" placeholder="수량" value="1">
+          <button type="button" id="bag-item-save-btn">저장</button>
+        </div>
+        <input type="text" id="bag-search" placeholder="가방 검색...">
+        <div id="bag-list" class="result"></div>
+
+        <h3>보관함</h3>
+        <div class="field-group">
+          <input type="text" id="storage-item-input" list="all-item-datalist" placeholder="아이템 이름 (표에서 클릭하면 불러옴)">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" id="storage-item-qty" placeholder="수량" value="1">
+          <button type="button" id="storage-item-save-btn">저장</button>
+        </div>
+        <input type="text" id="storage-search" placeholder="보관함 검색...">
+        <div id="storage-list" class="result"></div>
+      </div>
+
+      <h3>공용 보관함</h3>
+      <p class="hint">캐릭터 구분 없이 계정 전체가 공유하는 보관함입니다.</p>
+      <div class="field-group">
+        <input type="text" id="acct-item-input" list="all-item-datalist" placeholder="아이템 이름 (표에서 클릭하면 불러옴)">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="acct-item-qty" placeholder="수량" value="1">
+        <button type="button" id="acct-item-save-btn">저장</button>
+      </div>
+      <input type="text" id="acct-search" placeholder="공용 보관함 검색...">
+      <div id="acct-list" class="result"></div>
     </div>
   </section>
 
