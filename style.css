@@ -263,6 +263,7 @@ footer {
 .inv-nav-item:hover { border-color: var(--color-accent); }
 .inv-nav-item.active { background: var(--color-accent); color: #121212; border-color: var(--color-accent); }
 
+#inventory-detail { min-width: 0; }
 #inventory-detail h4 { margin-top: 0; }
 
 #edit-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.8rem 0; }
