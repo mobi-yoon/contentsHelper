@@ -230,7 +230,7 @@ footer {
 
 #inventory-browser {
   display: grid;
-  grid-template-columns: 210px 1fr;
+  grid-template-columns: 290px 1fr;
   gap: 1rem;
   align-items: start;
 }
