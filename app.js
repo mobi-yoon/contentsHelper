@@ -1554,12 +1554,11 @@ function renderCharSelect() {
 }
 
 function buildInventoryNavItems() {
-  const items = [];
+  const items = [{ type: "acct", charId: null, label: "공용 보관함" }];
   characters.forEach(c => {
     items.push({ type: "bag", charId: c.id, label: `${c.name} · 가방` });
     items.push({ type: "storage", charId: c.id, label: `${c.name} · 보관함` });
   });
-  items.push({ type: "acct", charId: null, label: "공용 보관함" });
   return items;
 }
 

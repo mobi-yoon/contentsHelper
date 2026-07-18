@@ -265,6 +265,8 @@ footer {
 
 #inventory-detail { min-width: 0; }
 #inventory-detail h4 { margin-top: 0; }
+#inventory-detail .table-wrap { min-width: 0; }
+#inventory-detail .data-table td { white-space: normal; }
 
 #edit-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.8rem 0; }
 
