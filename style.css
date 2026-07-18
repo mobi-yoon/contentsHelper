@@ -244,11 +244,14 @@ footer {
   gap: 0.3rem;
   max-height: 480px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .inv-nav-item {
   display: block;
   width: 100%;
+  min-width: 0;
+  white-space: normal;
   text-align: left;
   padding: 0.5rem 0.7rem;
   border: 1px solid var(--color-divider);
