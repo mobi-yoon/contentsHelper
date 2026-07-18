@@ -1529,6 +1529,7 @@ function renderCharSelect() {
   select.value = selectedCharacterId || "";
   document.getElementById("char-inventory-section").classList.toggle("hidden", !selectedCharacterId);
   document.getElementById("char-delete-btn").disabled = !selectedCharacterId;
+  document.getElementById("char-rename-btn").disabled = !selectedCharacterId;
 }
 
 function setupAccountManage() {
@@ -1582,6 +1583,27 @@ function setupAccountManage() {
     selectedCharacterId = data.id;
     await loadCharacters();
     await Promise.all([bagTable.reload(), storageTable.reload()]);
+  });
+
+  document.getElementById("char-rename-btn").addEventListener("click", async () => {
+    const msg = document.getElementById("char-msg");
+    if (!selectedCharacterId) { showMsg(msg, "수정할 캐릭터를 선택해주세요.", "error"); return; }
+    const nameInput = document.getElementById("char-new-name");
+    const name = nameInput.value.trim();
+    if (!name) { showMsg(msg, "새 이름을 입력해주세요.", "error"); return; }
+    if (characters.some(c => c.id !== selectedCharacterId && c.name === name)) {
+      showMsg(msg, "이미 등록된 캐릭터 이름입니다.", "error"); return;
+    }
+
+    const { error } = await supabaseClient
+      .from("characters")
+      .update({ name })
+      .eq("id", selectedCharacterId);
+    if (error) { showMsg(msg, friendlyError(error), "error"); return; }
+
+    nameInput.value = "";
+    showMsg(msg, "수정 완료.", "success");
+    await loadCharacters();
   });
 
   document.getElementById("char-delete-btn").addEventListener("click", async () => {

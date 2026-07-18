@@ -90,28 +90,30 @@
   </section>
 
   <section id="account" class="tab-panel">
-    <h2>계정</h2>
-
-    <div id="auth-box">
-      <div id="auth-loggedout">
-        <label>이메일 <input type="text" id="auth-email"></label>
-        <label>비밀번호 <input type="password" id="auth-password"></label>
-        <button id="auth-login-btn">로그인</button>
-        <button id="auth-signup-btn">회원가입</button>
-        <div id="auth-msg" class="result"></div>
-      </div>
-      <div id="auth-loggedin" class="hidden">
-        <span id="auth-user"></span>
-        <button id="auth-logout-btn">로그아웃</button>
+    <div class="section-header">
+      <h2>계정</h2>
+      <div id="auth-box">
+        <div id="auth-loggedout">
+          <label>이메일 <input type="text" id="auth-email"></label>
+          <label>비밀번호 <input type="password" id="auth-password"></label>
+          <button id="auth-login-btn">로그인</button>
+          <button id="auth-signup-btn">회원가입</button>
+        </div>
+        <div id="auth-loggedin" class="hidden">
+          <span id="auth-user"></span>
+          <button id="auth-logout-btn">로그아웃</button>
+        </div>
       </div>
     </div>
+    <div id="auth-msg" class="result"></div>
 
     <div id="account-body" class="hidden">
       <h3>캐릭터</h3>
-      <div class="field-group">
+      <div class="inline-row">
         <select id="char-select"></select>
         <input type="text" id="char-new-name" placeholder="새 캐릭터 이름">
         <button type="button" id="char-add-btn">캐릭터 추가</button>
+        <button type="button" id="char-rename-btn">캐릭터 수정</button>
         <button type="button" id="char-delete-btn" class="danger">캐릭터 삭제</button>
       </div>
       <div id="char-msg" class="result"></div>
