@@ -1488,7 +1488,7 @@ function setupItemTable({ inputId, qtyId, saveId, searchId, listId, table, extra
 
   search.addEventListener("input", render);
 
-  saveBtn.addEventListener("click", async () => {
+  async function save() {
     const f = extraFields();
     if (!f) return;
     const name = input.value.trim();
@@ -1503,7 +1503,11 @@ function setupItemTable({ inputId, qtyId, saveId, searchId, listId, table, extra
     input.value = "";
     qtyInput.value = "1";
     await reload();
-  });
+  }
+
+  saveBtn.addEventListener("click", save);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") save(); });
+  qtyInput.addEventListener("keydown", (e) => { if (e.key === "Enter") save(); });
 
   return { reload, clear };
 }
