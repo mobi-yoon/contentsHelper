@@ -1503,6 +1503,7 @@ function setupItemTable({ inputId, qtyId, saveId, searchId, listId, table, extra
     input.value = "";
     qtyInput.value = "1";
     await reload();
+    input.focus();
   }
 
   saveBtn.addEventListener("click", save);
