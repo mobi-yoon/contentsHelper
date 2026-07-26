@@ -43,7 +43,7 @@
     <h2>완제품 n개 제작 시 필요 재료</h2>
     <input type="text" id="bd-name" list="bd-datalist" placeholder="완제품 이름">
     <datalist id="bd-datalist"></datalist>
-    <input type="text" inputmode="numeric" pattern="[0-9]*" id="bd-qty" placeholder="개수" value="1">
+    <input type="text" pattern="[0-9]*" id="bd-qty" placeholder="개수" value="1">
     <button id="bd-run">계산</button>
     <div id="bd-result" class="result"></div>
   </section>
@@ -129,7 +129,7 @@
             <h4>가방 — <span id="inv-bag-char-name"></span></h4>
             <div class="inline-row">
               <input type="text" id="bag-item-input" list="all-item-datalist" placeholder="아이템 이름 (표에서 클릭하면 불러옴)">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" id="bag-item-qty" placeholder="수량" value="1">
+              <input type="text" pattern="[0-9]*" id="bag-item-qty" placeholder="수량" value="1">
               <button type="button" id="bag-item-save-btn">저장</button>
             </div>
             <input type="text" id="bag-search" placeholder="가방 검색...">
@@ -140,7 +140,7 @@
             <h4>보관함 — <span id="inv-storage-char-name"></span></h4>
             <div class="inline-row">
               <input type="text" id="storage-item-input" list="all-item-datalist" placeholder="아이템 이름 (표에서 클릭하면 불러옴)">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" id="storage-item-qty" placeholder="수량" value="1">
+              <input type="text" pattern="[0-9]*" id="storage-item-qty" placeholder="수량" value="1">
               <button type="button" id="storage-item-save-btn">저장</button>
             </div>
             <input type="text" id="storage-search" placeholder="보관함 검색...">
@@ -152,7 +152,7 @@
             <p class="hint">캐릭터 구분 없이 계정 전체가 공유하는 보관함입니다.</p>
             <div class="inline-row">
               <input type="text" id="acct-item-input" list="all-item-datalist" placeholder="아이템 이름 (표에서 클릭하면 불러옴)">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" id="acct-item-qty" placeholder="수량" value="1">
+              <input type="text" pattern="[0-9]*" id="acct-item-qty" placeholder="수량" value="1">
               <button type="button" id="acct-item-save-btn">저장</button>
             </div>
             <input type="text" id="acct-search" placeholder="공용 보관함 검색...">
@@ -193,7 +193,7 @@
           </label>
           <label>소분류 <input type="text" id="ra-sub" list="sub-datalist" placeholder="예: 무기 (없으면 비워둠)"></label>
           <label>완제품 이름 <input type="text" id="ra-name"></label>
-          <label>산출 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="ra-output" value="1"></label>
+          <label>산출 수량 <input type="text" pattern="[0-9]*" id="ra-output" value="1"></label>
         </div>
         <h4>재료</h4>
         <div id="ra-materials" class="materials-box"></div>
@@ -217,7 +217,7 @@
               </select>
             </label>
             <label>소분류 <input type="text" id="rm-sub" list="sub-datalist"></label>
-            <label>산출 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="rm-output"></label>
+            <label>산출 수량 <input type="text" pattern="[0-9]*" id="rm-output"></label>
           </div>
           <h4>재료</h4>
           <div id="rm-materials" class="materials-box"></div>
@@ -236,7 +236,7 @@
           <label>스크롤 종류 <input type="text" id="sa-type" list="scroll-type-datalist" placeholder="채집/채광/제작/요리/새 이름"></label>
           <label>마을 <input type="text" id="sa-town" list="town-datalist" placeholder="마을 이름"></label>
           <label>대상 아이템 이름 <input type="text" id="sa-target" list="all-item-datalist"></label>
-          <label>스크롤 1장당 필요 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="sa-qty" value="1"></label>
+          <label>스크롤 1장당 필요 수량 <input type="text" pattern="[0-9]*" id="sa-qty" value="1"></label>
         </div>
         <button id="sa-save-btn">저장</button>
         <div id="sa-msg" class="result"></div>
@@ -249,7 +249,7 @@
         <div id="sm-form" class="hidden">
           <div class="field-group">
             <label>마을 <input type="text" id="sm-town" list="town-datalist"></label>
-            <label>스크롤 1장당 필요 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="sm-qty"></label>
+            <label>스크롤 1장당 필요 수량 <input type="text" pattern="[0-9]*" id="sm-qty"></label>
           </div>
           <div>
             <button id="sm-save-btn">수정 저장</button>
@@ -275,9 +275,9 @@
           <label>마을 <input type="text" id="ta-town" list="town-datalist"></label>
           <label>NPC <input type="text" id="ta-npc" list="npc-datalist"></label>
           <label>얻는 아이템 이름 <input type="text" id="ta-item" list="all-item-datalist"></label>
-          <label>얻는 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="ta-item-qty" value="1"></label>
+          <label>얻는 수량 <input type="text" pattern="[0-9]*" id="ta-item-qty" value="1"></label>
           <label>필요 재료 이름 <input type="text" id="ta-required" list="all-item-datalist" placeholder="없으면 비워둠"></label>
-          <label>필요 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="ta-required-qty" placeholder="없으면 비워둠"></label>
+          <label>필요 수량 <input type="text" pattern="[0-9]*" id="ta-required-qty" placeholder="없으면 비워둠"></label>
           <label>제한 <input type="text" id="ta-limit" placeholder="예: 일일 1회 (없으면 비워둠)"></label>
         </div>
         <button id="ta-save-btn">저장</button>
@@ -293,9 +293,9 @@
             <label>마을 <input type="text" id="tm-town" list="town-datalist"></label>
             <label>NPC <input type="text" id="tm-npc" list="npc-datalist"></label>
             <label>얻는 아이템 이름 <input type="text" id="tm-item" list="all-item-datalist"></label>
-            <label>얻는 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="tm-item-qty"></label>
+            <label>얻는 수량 <input type="text" pattern="[0-9]*" id="tm-item-qty"></label>
             <label>필요 재료 이름 <input type="text" id="tm-required" list="all-item-datalist" placeholder="없으면 비워둠"></label>
-            <label>필요 수량 <input type="text" inputmode="numeric" pattern="[0-9]*" id="tm-required-qty" placeholder="없으면 비워둠"></label>
+            <label>필요 수량 <input type="text" pattern="[0-9]*" id="tm-required-qty" placeholder="없으면 비워둠"></label>
             <label>제한 <input type="text" id="tm-limit" placeholder="없으면 비워둠"></label>
           </div>
           <div>
@@ -313,7 +313,7 @@
           <label>NPC <input type="text" id="pa-npc" list="npc-datalist"></label>
           <label>아이템 이름 <input type="text" id="pa-item" list="all-item-datalist"></label>
           <label>화폐 종류 <input type="text" id="pa-currency" placeholder="예: 골드, 하트 토큰"></label>
-          <label>가격 <input type="text" inputmode="numeric" pattern="[0-9]*" id="pa-amount"></label>
+          <label>가격 <input type="text" pattern="[0-9]*" id="pa-amount"></label>
           <label>제한 <input type="text" id="pa-limit" placeholder="예: 일일 1회 (없으면 비워둠)"></label>
         </div>
         <button id="pa-save-btn">저장</button>
@@ -330,7 +330,7 @@
             <label>NPC <input type="text" id="pm-npc" list="npc-datalist"></label>
             <label>아이템 이름 <input type="text" id="pm-item" list="all-item-datalist"></label>
             <label>화폐 종류 <input type="text" id="pm-currency"></label>
-            <label>가격 <input type="text" inputmode="numeric" pattern="[0-9]*" id="pm-amount"></label>
+            <label>가격 <input type="text" pattern="[0-9]*" id="pm-amount"></label>
             <label>제한 <input type="text" id="pm-limit" placeholder="없으면 비워둠"></label>
           </div>
           <div>
